@@ -1,0 +1,64 @@
+
+{
+    "Item#" :{
+        "SKU": "sku here",
+        "Title": "title here",
+        "Location": "Shelf: (shelf here), Box: (box here)",
+        "CategoryID": "CategoryID here",
+        "Item Specifics":{
+            "Year": "year",
+            "Mint Mark": "mint mark",
+            "Denomination": "Denomination",
+            "Series": "Series",
+            "Grade Company": "Grade Company",
+            "Grade": "Grade",
+            "Circulated/Uncirculated": "Circulated/Uncirculated",
+            "Notes": "Notes",
+            "Starting Price": "Starting Price",
+            "Quantity": "Quantity",
+            "ListingType": "ListingType",
+            "Shipping Profile Name": "Shipping Profile Name",
+            "Return Profile Name": "Return Profile Name",
+            "Payment Profile name": "Payment Profile Name"    
+        },
+        "Stats": {
+            "Owner": "Location Code here",
+            "Listed?": "boolean",
+            "Date Listed": "date this script ran",
+            "Time Listed": "time this script ran"
+
+        }
+    }
+}
+
+
+item_data = {
+    row['Item#']: {
+        "SKU": row['SKU'],
+        "Title": f"{row['Denomination']} {row['Series']}",
+        "Location": f"Shelf: {row['Shelf/Rack']}, Box: {row['Box#']}",
+        "CategoryID": "CategoryID here",  # Add logic or static data as needed
+        "Item Specifics": {
+            "Year": row['Year'],
+            "Mint Mark": row['Mint Mark'],
+            "Denomination": row['Denomination'],
+            "Series": row['Series'],
+            "Grade Company": row['Grade Company'],
+            "Grade": row['Grade'],
+            "Circulated/Uncirculated": row['Circulated/Uncirculated'],
+            "Notes": row['Notes'],
+            "Starting Price": row['Starting Price'],
+            "Quantity": row['Quantity'],
+            "ListingType": row['Listing Type'],
+            "Shipping Profile Name": row['Shipping Profile Name'],
+            "Return Profile Name": row['Return Profile Name'],
+            "Payment Profile name": row['Payment Profile Name']
+        },
+        "Stats": {
+            "Owner": "Location Code here",  # Adjust as necessary or pull dynamically if possible
+            "Listed?": listed_status,
+            "Date Listed": datetime.now().strftime("%Y-%m-%d"),
+            "Time Listed": datetime.now().strftime("%H:%M:%S")
+        }
+    }
+}
