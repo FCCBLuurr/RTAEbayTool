@@ -1,6 +1,9 @@
 # Ignore macOS system files
 .DS_Store
 
+# Ignore .backup files used in dev/testing
+*.backup
+
 # Ignore Python cache files
 __pycache__/
 *.py[cod]
