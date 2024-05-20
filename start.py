@@ -45,7 +45,7 @@ class App(QMainWindow):
         self.create_button("Step 1 \n Rename Photos", "renameScript", 0, 0)
         self.create_button("Step 2 \n Upload Photos", "uploadPhotos", 1, 0)
         self.create_button("Step 3 \n Create Payload", "extract", 2, 0)
-        self.create_button("Step 3.5 \n Update Spreadsheet", "update", 2, 1)
+        self.create_button("Step 3.5 \n Update Spreadsheet", "updateSS", 2, 1)
         self.create_button("Auction Orders Only! \n Import Orders \n to Shipstation", "importShipstation", 0, 2)
 
     def create_button(self, text, script_name, column, row):
