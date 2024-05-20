@@ -1,5 +1,6 @@
 import os
 import re
+from icecream import ic
 
 def get_file_list(folder_path):
     files = [f for f in os.listdir(folder_path) if not f.startswith('.')]
@@ -25,6 +26,7 @@ def rename_files(folder_path, prefix, start_number, num_photos, files):
         new_name = f"{prefix}#{count}_{photo_index}.jpg"
         new_path = os.path.join(folder_path, new_name)
         os.rename(current_path, new_path)
+        ic(f"Renamed: {new_name}")
         
         photo_index += 1
         if photo_index > num_photos:
