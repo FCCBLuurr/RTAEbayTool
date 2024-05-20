@@ -39,28 +39,33 @@ class GCEApp:
         # self.canvas.create_image(self.window_width // 2, self.window_height // 2, anchor=tk.CENTER, image=self.photo)
         
 
-        # Create a label
-        self.label = tk.Label(master, text="Enter the start number:")
-        self.label.grid(row=2, column=0, padx=10, pady=7)
+        # Add num_photos entry box here
 
+        self.skuLabel = tk.Label(master, text="Enter Prefix")
+        self.skuLabel.grid(row=2, column=0, padx=4, pady=4)
+        self.prefix = tk.Entry(master, width=25)
+        self.prefix.grid(row=3, column=0, padx=2, pady=2)
         # Create an entry field
-        self.entry = tk.Entry(master, width=25)
-        self.entry.grid(row=2, column=1, padx=10, pady=7)
+        self.label = tk.Label(master, text="Enter the start number:")
+        self.label.grid(row=2, column=1, padx=10, pady=7)
+        self.sku = tk.Entry(master, width=25)
+        self.sku.grid(row=3, column=1, padx=2, pady=2)
 
         # Create a rename button
         self.button = tk.Button(master, text="Rename Files", command=self.execute_rename, width=12)
-        self.button.grid(row=3, column=0, columnspan=1, padx=2, pady=(5 , 15))
+        self.button.grid(row=4, column=0, columnspan=1, padx=2, pady=(5 , 15))
         
         # Create a change CSV button
         self.button = tk.Button(master, text="Update CSV", command=self.execute_csv, width=12, state='disabled')
-        self.button.grid(row=3, column=1, columnspan=1, padx=2, pady=(5, 15))
+        self.button.grid(row=4, column=1, columnspan=1, padx=2, pady=(5, 15))
         
         # Create a progress bar
         self.progress_bar = Progressbar(master, length=335, mode='determinate')
         self.progress_bar.grid(row=1, column=0, columnspan=2, padx=10, pady=(2, 7))
 
     def execute_rename(self):
-        start_number = self.entry.get()
+        start_number = self.sku.get()
+        prefix = self.prefix.get()
         try:
             start_number = int(start_number)
 
@@ -69,7 +74,7 @@ class GCEApp:
             total_files = len(files)
 
             queue = Queue()
-            thread = Thread(target=self.rename_files, args=(folder_path, start_number, files, queue))
+            thread = Thread(target=self.rename_files, args=(folder_path, prefix, start_number, files, queue))
             thread.start()
             self.update_progress_bar(total_files, queue)
         except ValueError:

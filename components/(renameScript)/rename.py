@@ -5,9 +5,9 @@ def get_file_list(folder_path):
     files = [f for f in os.listdir(folder_path) if not f.startswith('.')]
     return files
 
-def rename_files(folder_path, start_number, files):
+def rename_files(folder_path, prefix, start_number, num_photos, files):
     count = start_number
-    i = 1
+    photo_index = 1
     
     # Attempt to sort files and catch any that cause an IndexError
     try:
@@ -21,22 +21,13 @@ def rename_files(folder_path, start_number, files):
     total_files = len(files)
     
     for file_name in files:
-        # Generate the new file names with i iterating and resetting
+        current_path = os.path.join(folder_path, file_name)
+        new_name = f"{prefix}#{count}_{photo_index}.jpg"
+        new_path = os.path.join(folder_path, new_name)
+        os.rename(current_path, new_path)
         
-        if i == 1:
-            # new_name_1 = f"RTA#{count}_{i}.CR3"
-            new_name_1 = f"RTA#{count}_1.jpg"
-            current_path = os.path.join(folder_path, file_name)
-            new_path_1 = os.path.join(folder_path, new_name_1)
-            os.rename(current_path, new_path_1)
-            i += 1
-        elif i == 2:
-            # new_name_2 = f"RTA#{count}_{i}.CR3"
-            new_name_2 = f"RTA#{count}_2.jpg"
-            current_path = os.path.join(folder_path, file_name)
-            new_path_2 = os.path.join(folder_path, new_name_2)
-            os.rename(current_path, new_path_2)
+        photo_index += 1
+        if photo_index > num_photos:
             count += 1
-            i = 1
-        
+            photo_index = 1
     return total_files
