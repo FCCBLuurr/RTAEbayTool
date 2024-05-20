@@ -14,6 +14,24 @@ def run_script(script_name):
     except subprocess.CalledProcessError as e:
         QMessageBox.critical(None, "Error", f"Failed to run {script_name}.\n{str(e)}")
 
+def git_pull():
+    try:
+        # Fetch the latest changes from the remote repository
+        fetch_result = subprocess.run(["git", "fetch", "origin"], check=True, capture_output=True, text=True)
+        ic(fetch_result.stdout)
+        ic(fetch_result.stderr)
+
+        # Reset the local branch to match the remote branch
+        reset_result = subprocess.run(["git", "reset", "--hard", "origin/main"], check=True, capture_output=True, text=True)
+        ic(reset_result.stdout)
+        ic(reset_result.stderr)
+
+        return fetch_result.returncode == 0 and reset_result.returncode == 0
+    except subprocess.CalledProcessError as e:
+        ic(e.stdout)
+        ic(e.stderr)
+        return False
+
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -47,16 +65,18 @@ if __name__ == "__main__":
     if update_available:
         app = QApplication([])  # Create QApplication instance for QMessageBox
         QMessageBox.information(None, "Update Available", f"A new version {new_version} is available.")
-        os.system("git pull origin main")  # Adjust branch name if needed
-        with open('.env', 'r') as file:
-            lines = file.readlines()
-        with open('.env', 'w') as file:
-            for line in lines:
-                if line.startswith("VERSION"):
-                    file.write(f"VERSION={new_version}\n")
-                else:
-                    file.write(line)
-        QMessageBox.information(None, "Update Complete", "The application has been updated to the latest version. Please restart the application.")
+        if git_pull():
+            with open('.env', 'r') as file:
+                lines = file.readlines()
+            with open('.env', 'w') as file:
+                for line in lines:
+                    if line.startswith("VERSION"):
+                        file.write(f"VERSION={new_version}\n")
+                    else:
+                        file.write(line)
+            QMessageBox.information(None, "Update Complete", "The application has been updated to the latest version. Please restart the application.")
+        else:
+            QMessageBox.critical(None, "Update Failed", "The update process failed. Please check the logs.")
         app.quit()  # Close the application to prompt a restart
     else:
         app = QApplication([])
