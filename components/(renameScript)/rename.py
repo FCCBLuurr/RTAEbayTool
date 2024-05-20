@@ -6,7 +6,7 @@ def get_file_list(folder_path):
     files = [f for f in os.listdir(folder_path) if not f.startswith('.')]
     return files
 
-def rename_files(folder_path, prefix, start_number, num_photos, files):
+def rename_files(folder_path, prefix, start_number, suffix, files, queue):
     count = start_number
     photo_index = 1
     
@@ -29,7 +29,7 @@ def rename_files(folder_path, prefix, start_number, num_photos, files):
         ic(f"Renamed: {new_name}")
         
         photo_index += 1
-        if photo_index > num_photos:
+        if int(photo_index) > int(suffix):
             count += 1
             photo_index = 1
     return total_files
