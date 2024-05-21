@@ -1,19 +1,33 @@
-import pandas as pd
-import json
-from datetime import datetime
+import sys
 import os
+import json
+import pandas as pd
+from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from icecream import ic  # For better debug outputs
 from openpyxl import load_workbook  # For updating the Excel file
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from settings.settings_manager import SettingsManager
 
-base_dir = os.path.join('/Users/ejrta/Documents/Coding Folders/Scripts and Macros/Tools and Workflow Scripts/Flickr&EbayV1', 'components/(extract)')
+# base_dir = os.path.join('/Users/ejrta/Documents/Coding Folders/Scripts and Macros/Tools and Workflow Scripts/Flickr&EbayV1', 'components/(extract)')
+
+# Determine the project's root directory dynamically
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+base_dir = os.path.join(project_root, 'RTAEbayTool', 'components', '(extract)')
+
+# Initialize the SettingsManager with the correct path to the settings.json file
+settings_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'settings', 'settings.json')
+settings_manager = SettingsManager(settings_file)
+
+default_document_directory = settings_manager.get_setting('default_documents_directory', './document')
+default_output_directory = settings_manager.get_setting('default_output_directory', './components/(extract)/payload')
 
 
 def extract_data():
     root = tk.Tk()
     root.withdraw()
-    initial_dir = '/users/ejrta/Documents/Excel Sheets/Ebay Inventory Sheet'
+    initial_dir = default_document_directory
     file_path = filedialog.askopenfilename(
         title="Select the Excel file",
         initialdir=initial_dir,
@@ -187,7 +201,8 @@ def load_data_into_excel(workbook, template_path):
         current_row += 1
 
     # Save the updated Excel file
-    payload_dir = os.path.join(base_dir, 'payload')
+    # payload_dir = os.path.join(base_dir, 'payload')
+    payload_dir = os.path.join(default_output_directory)
     if not os.path.exists(payload_dir):
         os.makedirs(payload_dir, exist_ok=True)
     

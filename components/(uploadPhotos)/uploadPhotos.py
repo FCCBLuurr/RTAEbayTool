@@ -9,6 +9,17 @@ from icecream import ic
 import random
 import time
 import xml.etree.ElementTree as ET
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from settings.settings_manager import SettingsManager
+
+# Initialize the SettingsManager with the correct path to the settings.json file
+settings_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'settings', 'settings.json')
+settings_manager = SettingsManager(settings_file)
+
+default_photo_directory = settings_manager.get_setting('default_photo_directory', './photos')
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+base_dir = os.path.join(project_root, 'components')
 
 class FlickrApp(QMainWindow):
     def __init__(self):
@@ -40,9 +51,9 @@ class FlickrApp(QMainWindow):
         self.auth_button.clicked.connect(self.start_authentication)
         layout.addWidget(self.auth_button)
 
-        self.file_button = QPushButton('Select Files', self)
-        self.file_button.clicked.connect(self.select_files)
-        layout.addWidget(self.file_button)
+        # self.file_button = QPushButton('Select Files', self)
+        # self.file_button.clicked.connect(self.select_files)
+        # layout.addWidget(self.file_button)
 
         self.upload_button = QPushButton('Upload Files', self)
         self.upload_button.clicked.connect(self.upload_photos)
@@ -67,22 +78,23 @@ class FlickrApp(QMainWindow):
         if ok and verifier:
             self.flickr.get_access_token(verifier)
 
-    def select_files(self):
-        options = QFileDialog.Options()
-        files, _ = QFileDialog.getOpenFileNames(self, "Choose files", "/Users/ejrta/Pictures/Test",
-                                                "JPEG Files (*.jpg *.jpeg);;PNG Files (*.png);;All Files (*)", options=options)
-        if files:
-            self.listbox.clear()
-            for file in files:
-                self.listbox.addItem(file)
+    # def select_files(self):
+    #     options = QFileDialog.Options()
+    #     files, _ = QFileDialog.getOpenFileNames(self, "Choose files", "/Users/ejrta/Pictures/Test",
+    #                                             "JPEG Files (*.jpg *.jpeg);;PNG Files (*.png);;All Files (*)", options=options)
+    #     if files:
+    #         self.listbox.clear()
+    #         for file in files:
+    #             self.listbox.addItem(file)
   
   ## 0000---- Older Known Working Version Below ----0000 ###
                 
     def upload_photos(self):
         # Ask the user to select a directory
-        options = QFileDialog.Options()
-        initial_dir = '/Users/ejrta/Pictures/Test'
-        file_path = QFileDialog.getExistingDirectory(self, "Select folder containing photos", options=options)
+        # options = QFileDialog.Options()
+        # initial_dir = '/Users/ejrta/Pictures/Test'
+        app = QApplication(sys.argv)  # Ensure a QApplication instance is created
+        file_path = QFileDialog.getExistingDirectory(None, "Select folder containing photos", default_photo_directory, QFileDialog.ShowDirsOnly)
         if not file_path:
             return  # User cancelled the operation
 
@@ -108,6 +120,7 @@ class FlickrApp(QMainWindow):
                     print("Failed to upload", filename, "Error:", e)
 
         self.write_json()
+        app.exit()
 
     def parse_filename(self, filename):
         # Assuming the filename format is `{prefix}#{sku}_{suffix}.jpg`
@@ -143,8 +156,8 @@ class FlickrApp(QMainWindow):
             sorted_urls = sorted(urls, key=lambda x: x[0])  # Sort by suffix
             organized_data[sku] = {'url': '|'.join([url for _, url in sorted_urls])}
 
-        # Absolute path to save photos.json
-        target_path = '/Users/ejrta/Documents/Coding Folders/Scripts and Macros/Tools and Workflow Scripts/Flickr&EbayV1/components/(extract)/photos.json'
+        #Dynamic path now
+        target_path = os.path.join(base_dir, '(extract)', 'photos.json')
 
         # Check if the target directory exists and create it if not
         target_directory = os.path.dirname(target_path)

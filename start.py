@@ -1,15 +1,17 @@
 import os
 import subprocess
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox, QMenuBar, QMenu, QAction, QFileDialog
 from dotenv import load_dotenv
 from icecream import ic
 import update
+from components.settings.settings_manager import SettingsManager
+
 
 def run_script(script_name):
     try:
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        script_folder = f"({script_name})"
-        script_path = os.path.join(base_dir, "components", script_folder, script_name + ".py")
+        script_folder = f"components/({script_name})"
+        script_path = os.path.join(base_dir, script_folder, script_name + ".py")
         subprocess.run(["python3", script_path], check=True)
     except subprocess.CalledProcessError as e:
         QMessageBox.critical(None, "Error", f"Failed to run {script_name}.\n{str(e)}")
@@ -38,9 +40,23 @@ class App(QMainWindow):
         self.setWindowTitle("~~Alpha Test~~")
         self.setFixedHeight(350)
         self.setFixedWidth(640)
+        settings_file = os.path.join(os.path.dirname(__file__), 'components', 'settings', 'settings.json')
+        self.settings_manager = SettingsManager(settings_file)
         self.init_ui()
 
     def init_ui(self):
+        # Initialize menu bar
+        menu_bar = self.menuBar()
+
+        # Create Settings menu
+        settings_menu = QMenu("Settings", self)
+        menu_bar.addMenu(settings_menu)
+
+        # Add action to Settings menu
+        open_settings_action = QAction("Open Settings", self)
+        open_settings_action.triggered.connect(self.open_settings)
+        settings_menu.addAction(open_settings_action)
+        
         # Initialize buttons
         self.create_button("Step 1 \n Rename Photos", "renameScript", 0, 0)
         self.create_button("Step 2 \n Upload Photos", "uploadPhotos", 1, 0)
@@ -53,7 +69,21 @@ class App(QMainWindow):
         button.clicked.connect(lambda _, sn=script_name: run_script(sn))  # Fixed lambda
         button.setFixedSize(200, 100)
         button.move(10 + (210 * column), 10 + (110 * row))
+    
+    def set_default_paths(self):
+        photo_directory = QFileDialog.getExistingDirectory(self, 'Select default photo directory')
+        if photo_directory:
+            self.settings_manager.set_setting('default_photo_directory', photo_directory)
+        
+        output_directory = QFileDialog.getExistingDirectory(self, 'Select default output directory')
+        if output_directory:
+            self.settings_manager.set_setting('default_output_directory', output_directory)
+        
+        QMessageBox.information(self, "Settings Saved", "Default paths have been updated.")
 
+    def open_settings(self):
+        subprocess.run(["python3", "components/settings/settings_manager.py"], check=True)
+    
 if __name__ == "__main__":
     load_dotenv()
     current_version = os.getenv('VERSION')
