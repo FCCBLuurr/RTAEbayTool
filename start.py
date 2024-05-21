@@ -61,14 +61,16 @@ class App(QMainWindow):
         self.create_button("Step 1 \n Rename Photos", "renameScript", 0, 0)
         self.create_button("Step 2 \n Upload Photos", "uploadPhotos", 1, 0)
         self.create_button("Step 3 \n Create Payload", "extract", 2, 0)
-        self.create_button("Step 3.5 \n Update Spreadsheet", "updateSS", 2, 1)
+        # self.create_button("Step 3.5 \n Update Spreadsheet", "updateSS", 2, 1)
         self.create_button("Auction Orders Only! \n Import Orders \n to Shipstation", "importShipstation", 0, 2)
 
     def create_button(self, text, script_name, column, row):
         button = QPushButton(text, self)
         button.clicked.connect(lambda _, sn=script_name: run_script(sn))  # Fixed lambda
         button.setFixedSize(200, 100)
-        button.move(10 + (210 * column), 10 + (110 * row))
+        #Moved buttons down 15 pixels to accomodate for the settings bar
+        button.move(10 + (210 * column), 25 + (110 * row))
+        
     
     def set_default_paths(self):
         photo_directory = QFileDialog.getExistingDirectory(self, 'Select default photo directory')
@@ -81,6 +83,7 @@ class App(QMainWindow):
         
         QMessageBox.information(self, "Settings Saved", "Default paths have been updated.")
 
+    ## Change to "python" when pushing to git
     def open_settings(self):
         subprocess.run(["python3", "components/settings/settings_manager.py"], check=True)
     
