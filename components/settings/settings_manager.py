@@ -46,21 +46,21 @@ class SettingsWindow(QMainWindow):
 
         self.photo_dir_label = QLabel(f"Default Photo Directory: {self.settings_manager.get_setting('default_photo_directory', './photos')}", self)
         layout.addWidget(self.photo_dir_label)
-        set_photo_dir_button = QPushButton('Set Default Photo Directory', self)
+        set_photo_dir_button = QPushButton('Set Default Photo Directory (Where you save photos)', self)
         set_photo_dir_button.clicked.connect(self.set_default_photo_directory)
         layout.addWidget(set_photo_dir_button)
 
-        self.output_dir_label = QLabel(f"Default Output Directory: {self.settings_manager.get_setting('default_output_directory', './output')}", self)
-        layout.addWidget(self.output_dir_label)
-        set_output_dir_button = QPushButton('Set Default Output Directory', self)
-        set_output_dir_button.clicked.connect(self.set_default_output_directory)
-        layout.addWidget(set_output_dir_button)
-
         self.documents_dir_label = QLabel(f"Default Documents Directory: {self.settings_manager.get_setting('default_documents_directory', './documents')}", self)
         layout.addWidget(self.documents_dir_label)
-        set_documents_dir_button = QPushButton('Set Default Documents Directory', self)
+        set_documents_dir_button = QPushButton('Set Default Documents Directory (Where you save excel files)', self)
         set_documents_dir_button.clicked.connect(self.set_default_documents_directory)
         layout.addWidget(set_documents_dir_button)
+
+        self.output_dir_label = QLabel(f"Default Output Directory: {self.settings_manager.get_setting('default_output_directory', './output')}", self)
+        layout.addWidget(self.output_dir_label)
+        set_output_dir_button = QPushButton('Set Default Output Directory (Where you want eBay payloads to be saved)', self)
+        set_output_dir_button.clicked.connect(self.set_default_output_directory)
+        layout.addWidget(set_output_dir_button)
 
         widget.setLayout(layout)
 

@@ -12,7 +12,7 @@ def run_script(script_name):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         script_folder = f"components/({script_name})"
         script_path = os.path.join(base_dir, script_folder, script_name + ".py")
-        subprocess.run(["python3", script_path], check=True)
+        subprocess.run(["python", script_path], check=True)
     except subprocess.CalledProcessError as e:
         QMessageBox.critical(None, "Error", f"Failed to run {script_name}.\n{str(e)}")
 
@@ -53,7 +53,7 @@ class App(QMainWindow):
         menu_bar.addMenu(settings_menu)
 
         # Add action to Settings menu
-        open_settings_action = QAction("Open Settings", self)
+        open_settings_action = QAction("Set Default Paths", self)
         open_settings_action.triggered.connect(self.open_settings)
         settings_menu.addAction(open_settings_action)
         
@@ -85,7 +85,7 @@ class App(QMainWindow):
 
     ## Change to "python" when pushing to git
     def open_settings(self):
-        subprocess.run(["python3", "components/settings/settings_manager.py"], check=True)
+        subprocess.run(["python", "components/settings/settings_manager.py"], check=True)
     
 if __name__ == "__main__":
     load_dotenv()
