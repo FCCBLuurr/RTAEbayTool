@@ -13,7 +13,7 @@ Click "Rename Photos" and it will ask you to select the folder where your photos
 After you have renamed your photos, you can close this window.
 | Entry Field   | Example Entry | Explanation |
 | ------------- | ------------- | ----------- |
-| Suffix  | RTA    | Designator, can be your initials |
+| Prefix  | RTA    | Designator, can be your initials |
 | Starting Number | 10000 | The first SKU for the items you're listing |
 | # Of Photos    | 2    | How many photos PER ITEM. Usually 2 |
 
@@ -51,4 +51,7 @@ https://github.com/FCCBLuurr/RTAEbayTool/issues
 
 Provide as much detail as possible, and steps that you performed to encounter this error. The more information the better I will be able to fix the issue.
 
+---
 
+Notes:
+After clicking on one of the buttons and a new window appears, you will be unable to interact with the main app window. 
