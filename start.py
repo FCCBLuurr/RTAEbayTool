@@ -12,7 +12,7 @@ def run_script(script_name):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         script_folder = f"components/({script_name})"
         script_path = os.path.join(base_dir, script_folder, script_name + ".py")
-        subprocess.run(["python3", script_path], check=True)
+        subprocess.run(["python", script_path], check=True)
     except subprocess.CalledProcessError as e:
         QMessageBox.critical(None, "Error", f"Failed to run {script_name}.\n{str(e)}")
 
