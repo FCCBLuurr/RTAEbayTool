@@ -86,7 +86,7 @@ def extract_data():
         grade = row['Grade'] if not pd.isna(row['Grade']) else ''
         circulation = row['Circulated/Uncirculated'] if not pd.isna(row['Circulated/Uncirculated']) else ''
         notes = row['Notes'] if not pd.isna(row['Notes']) else ''
-        description = row['Description'] if not pd.isna(row['Description']) else title
+        description = row['Description'] if 'Description' in row and not pd.isna(row['Description']) else title
         strike_type = row['Strike Type'] if not pd.isna(row['Strike Type']) else 'Business'
         weight_major = row['WeightMajor'] if not pd.isna(row['WeightMajor']) else ''
         weight_minor = row['WeightMinor'] if not pd.isna(row['WeightMinor']) else ''
@@ -185,7 +185,7 @@ def load_data_into_excel(workbook, template_path):
         sheet[f'E{current_row}'] = item['Title']
         sheet[f'I{current_row}'] = item['Item Specifics']['Starting Price']
         sheet[f'J{current_row}'] = item['Item Specifics']['Quantity']
-        sheet[f'N{current_row}'] = item['Title']
+        sheet[f'N{current_row}'] = item['Description']
         sheet[f'O{current_row}'] = item['Item Specifics']['ListingType']
         sheet[f'P{current_row}'] = "GTC" if item['Item Specifics']['ListingType'] == "FixedPrice" else "7"
         sheet[f'V{current_row}'] = "Marietta, GA"

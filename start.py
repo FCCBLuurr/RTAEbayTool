@@ -12,7 +12,7 @@ def run_script(script_name):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         script_folder = f"components/({script_name})"
         script_path = os.path.join(base_dir, script_folder, script_name + ".py")
-        subprocess.run(["python", script_path], check=True)
+        subprocess.run(["python3", script_path], check=True)
     except subprocess.CalledProcessError as e:
         QMessageBox.critical(None, "Error", f"Failed to run {script_name}.\n{str(e)}")
 
@@ -63,7 +63,7 @@ class App(QMainWindow):
         self.create_button("Step 3 \n Create Payload", "extract", 2, 0)
         # self.create_button("Step 3.5 \n Update Spreadsheet", "updateSS", 2, 1)
         self.create_button("Auction Orders Only! \n Import Orders \n to Shipstation", "importShipstation", 0, 2)
-
+        self.create_button("Find Missing Photos","copyMIAPhotos", 1, 2)
     def create_button(self, text, script_name, column, row):
         button = QPushButton(text, self)
         button.clicked.connect(lambda _, sn=script_name: run_script(sn))  # Fixed lambda

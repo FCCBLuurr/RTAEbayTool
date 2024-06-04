@@ -11,6 +11,7 @@ import time
 import xml.etree.ElementTree as ET
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from settings.settings_manager import SettingsManager
+import psycopg2
 
 # Initialize the SettingsManager with the correct path to the settings.json file
 settings_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'settings', 'settings.json')
@@ -26,11 +27,9 @@ class FlickrApp(QMainWindow):
         super().__init__()
         self.init_ui()
 
-        
     def init_ui(self):
         self.setWindowTitle('Flickr Tool')
         self.setGeometry(300, 300, 1000, 600)
-        
         
         # API setup
         self.api_key = '334014b6d21d5ff73d97c9bc73339b98'
@@ -77,22 +76,8 @@ class FlickrApp(QMainWindow):
         verifier, ok = QFileDialog.getText(self, "Verifier", "Enter the verifier code from Flickr:")
         if ok and verifier:
             self.flickr.get_access_token(verifier)
-
-    # def select_files(self):
-    #     options = QFileDialog.Options()
-    #     files, _ = QFileDialog.getOpenFileNames(self, "Choose files", "/Users/ejrta/Pictures/Test",
-    #                                             "JPEG Files (*.jpg *.jpeg);;PNG Files (*.png);;All Files (*)", options=options)
-    #     if files:
-    #         self.listbox.clear()
-    #         for file in files:
-    #             self.listbox.addItem(file)
-  
-  ## 0000---- Older Known Working Version Below ----0000 ###
                 
     def upload_photos(self):
-        # Ask the user to select a directory
-        # options = QFileDialog.Options()
-        # initial_dir = '/Users/ejrta/Pictures/Test'
         app = QApplication(sys.argv)  # Ensure a QApplication instance is created
         file_path = QFileDialog.getExistingDirectory(None, "Select folder containing photos", default_photo_directory, QFileDialog.ShowDirsOnly)
         if not file_path:
@@ -120,6 +105,7 @@ class FlickrApp(QMainWindow):
                     print("Failed to upload", filename, "Error:", e)
 
         self.write_json()
+        self.update_database()  # Update the database after writing JSON
         app.exit()
 
     def parse_filename(self, filename):
@@ -151,12 +137,18 @@ class FlickrApp(QMainWindow):
 
     def write_json(self):
         # Organize and write to JSON
-        organized_data = {}
+        organized_data_db = {}
+        organized_data_file = {}
         for sku, urls in self.photos_data.items():
             sorted_urls = sorted(urls, key=lambda x: x[0])  # Sort by suffix
-            organized_data[sku] = {'url': '|'.join([url for _, url in sorted_urls])}
+            organized_data_db[sku] = {'url': json.dumps([url for _, url in sorted_urls])}  # Convert to JSON array for DB
+            organized_data_file[sku] = {'url': '|'.join([url for _, url in sorted_urls])}  # Concatenate URLs for file
 
-        #Dynamic path now
+        # Store the organized data for database update
+        self.json_data = {'photos': organized_data_db}
+        print("Photos JSON prepared for database update")
+
+        # Write the organized data to a JSON file
         target_path = os.path.join(base_dir, '(extract)', 'photos.json')
 
         # Check if the target directory exists and create it if not
@@ -165,98 +157,46 @@ class FlickrApp(QMainWindow):
             os.makedirs(target_directory)
 
         with open(target_path, 'w') as json_file:
-            json.dump({'photos': organized_data}, json_file, indent=4)
+            json.dump({'photos': organized_data_file}, json_file, indent=4)
 
         print(f"Photos JSON saved to {target_path}")
+        return self.json_data
 
-### 0000---- Newest Version Below ----0000 ###
+    def update_database(self):
+        # Setup the database connection
+        connection = psycopg2.connect(
+            dbname="postgres",
+            user="bluurr",
+            password="548406",
+            host="127.0.0.1",
+            port="5432"
+        )
+        cursor = connection.cursor()
+
+        for sku, data in self.json_data['photos'].items():
+            # Check if the SKU exists in the database
+            cursor.execute('SELECT sku FROM inventory.obt_inventory WHERE sku = %s', (sku,))
+            row = cursor.fetchone()
+            if row:
+                # Update the URL for the existing SKU
+                cursor.execute('UPDATE inventory.obt_inventory SET photos = %s WHERE sku = %s', (data['url'], sku))
+                print(f"Updated SKU {sku} with URL {data['url']}")
+            else:
+                # Optionally, handle the case where SKU does not exist
+                print(f"SKU {sku} does not exist in the database")
+        connection.commit()
+
+        # Print out the updated database content for verification
+        cursor.execute('SELECT * FROM inventory.obt_inventory')
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+
+        # Close the database connection
+        cursor.close()
+        connection.close()
 
 
-    # def upload_photos(self):
-    #     options = QFileDialog.Options()
-    #     file_path = QFileDialog.getExistingDirectory(self, "Select folder containing photos", options=options)
-    #     if not file_path:
-    #         ic("No folder selected.")
-    #         return
-
-    #     valid_extensions = ('.jpg', '.jpeg', '.png')
-    #     files_to_upload = [os.path.join(file_path, f) for f in os.listdir(file_path)
-    #                     if os.path.isfile(os.path.join(file_path, f)) and f.lower().endswith(valid_extensions)]
-    #     ic("Files to upload:", files_to_upload)
-
-    #     if not files_to_upload:
-    #         ic("No files to upload found. Check file types and paths.")
-    #         return
-
-    #     for file_path in files_to_upload:
-    #         filename = os.path.basename(file_path)
-    #         sku, suffix = self.parse_filename(filename)
-    #         ic("Attempting to upload file:", filename)
-
-    #         retries = 0
-    #         max_retries = 3
-    #         while retries < max_retries:
-    #             try:
-    #                 response = self.flickr.upload(filename=file_path, title=filename)
-    #                 photo_id = response.find('photoid').text
-    #                 if response:
-    #                     url = self.retrieve_photo_url(photo_id)
-    #                     self.add_photo_data(sku, suffix, url)
-    #                     print(f"Uploaded {filename} successfully!")
-                        
-    #                 else:
-    #                     raise Exception("Empty response received.")
-    #             except Exception as e:
-    #                 ic(f"Failed to upload {filename} on attempt {retries + 1}/{max_retries}. Error:", str(e))
-    #                 retries += 1
-    #                 if retries >= max_retries:
-    #                     ic("Max retries reached for:", filename)
-    #                 time.sleep(5)  # Wait for 5 seconds before retrying
-
-    #         self.write_json()
-        
-    # def parse_filename(self, filename):
-    #     base_name = os.path.splitext(filename)[0]
-    #     parts = base_name.split('#')
-    #     if len(parts) < 2:
-    #         return None, None
-        
-    #     sku_part = parts[1]
-    #     sku_parts = sku_part.split('_')
-    #     if len(sku_parts) < 2:
-    #         return None, None
-        
-    #     sku = sku_parts[0]
-    #     suffix = sku_parts[1]
-    #     ic("SKU: ", sku)
-    #     return sku, suffix
-    
-    
-    # def retrieve_photo_url(self, photo_id):
-    #     sizes = self.flickr.photos.getSizes(photo_id=photo_id)
-    #     url = sizes.find('.//size[@label="Original"]').get('source')
-    #     return url
-
-    # def add_photo_data(self, sku, suffix, url):
-    #     if sku not in self.photos_data:
-    #         self.photos_data[sku] = []
-    #     self.photos_data[sku].append((str(suffix), url))
-
-    # def write_json(self):
-    #     organized_data = {}
-    #     for sku, urls in self.photos_data.items():
-    #         sorted_urls = sorted(urls, key=lambda x: x[0])
-    #         organized_data[sku] = {'url': '|'.join([url for _, url in sorted_urls])}
-
-    #     target_path = '/Users/ejrta/Documents/Coding Folders/Scripts and Macros/Tools and Workflow Scripts/Flickr&Ebay/components/(extract)/photos.json'
-    #     if not os.path.exists(os.path.dirname(target_path)):
-    #         os.makedirs(os.path.dirname(target_path))
-        
-    #     with open(target_path, 'w') as json_file:
-    #         json.dump({'photos': organized_data}, json_file, indent=4)
-
-    #     ic(f"Photos JSON saved to: ", target_path)
-        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = FlickrApp()
