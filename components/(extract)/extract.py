@@ -46,7 +46,7 @@ def extract_data():
             file_path,
             sheet_name='Inventory Sheet',
             header=3,
-            usecols='A:AF',
+            usecols='A:AH',
             engine='openpyxl'
         )
 
@@ -60,6 +60,15 @@ def extract_data():
             engine='openpyxl'
         ).iat[0,0]
         ic("Location Code:", location_code)
+        
+        currency_designations = pd.read_excel(
+            file_path,
+            sheet_name='Mappings',
+            usecols='W:Y',
+            skiprows=1,
+            header=None,
+            engine='openpyxl'
+        )
 
         df_filtered = df[(df['Listed?'].isin(['N', pd.NA])) & (df['Category ID'].notna())]
 
@@ -83,6 +92,7 @@ def extract_data():
         denom = str(row['Denomination'])
         # Prevent NaN values pythonically ;D
         schedule_time = row['ScheduleTime'] if not pd.isna(row['ScheduleTime']) else ''
+        grade_company = row['Grade Company'] if not pd.isna(row['Grade Company']) else ''
         grade = row['Grade'] if not pd.isna(row['Grade']) else ''
         circulation = row['Circulated/Uncirculated'] if not pd.isna(row['Circulated/Uncirculated']) else ''
         notes = row['Notes'] if not pd.isna(row['Notes']) else ''
@@ -93,6 +103,7 @@ def extract_data():
         package_length = row['PackageLength'] if not pd.isna(row['PackageLength']) else '9'
         package_width = row['PackageWidth'] if not pd.isna(row['PackageWidth']) else '6'
         package_depth = row['PackageDepth'] if not pd.isna(row['PackageDepth']) else '1'
+        grade_designation = row['Grade Designation'] if not pd.isna(row['Grade Designation']) else ''
 
         ic("Extracting description:", description)
 
@@ -107,8 +118,9 @@ def extract_data():
                     "Mint Mark": row['Mint Mark'],
                     "Denomination": denom,
                     "Series": row['Series'],
-                    "Grade Company": row['Grade Company'],
+                    "Grade Company": grade_company,
                     "Grade": grade,
+                    "Grade Designation": grade_designation,
                     "Strike Type": strike_type,
                     "Circulated/Uncirculated": circulation,
                     "Notes": notes,
@@ -185,7 +197,7 @@ def load_data_into_excel(workbook, template_path):
         sheet[f'E{current_row}'] = item['Title']
         sheet[f'I{current_row}'] = item['Item Specifics']['Starting Price']
         sheet[f'J{current_row}'] = item['Item Specifics']['Quantity']
-        sheet[f'N{current_row}'] = item['Description']
+        sheet[f'N{current_row}'] = item['Item Specifics']['Description']
         sheet[f'O{current_row}'] = item['Item Specifics']['ListingType']
         sheet[f'P{current_row}'] = "GTC" if item['Item Specifics']['ListingType'] == "FixedPrice" else "7"
         sheet[f'V{current_row}'] = "Marietta, GA"
@@ -196,6 +208,7 @@ def load_data_into_excel(workbook, template_path):
         sheet[f'AI{current_row}'] = item['Item Specifics']['Return Profile Name']
         sheet[f'AJ{current_row}'] = item['Item Specifics']['Payment Profile Name']
         sheet[f'AV{current_row}'] = item['Item Specifics']['Grade Company']
+        ##Add Grade Designation Item Specific here
         sheet[f'AW{current_row}'] = item['Item Specifics']['Circulated/Uncirculated']
         sheet[f'AX{current_row}'] = item['Item Specifics']['Year']
         sheet[f'AZ{current_row}'] = item['Item Specifics']['Denomination']
@@ -207,6 +220,7 @@ def load_data_into_excel(workbook, template_path):
         sheet[f'BI{current_row}'] = item['Item Specifics']['PackageWidth']
         sheet[f'BJ{current_row}'] = item['Item Specifics']['PackageDepth']
         sheet[f'K{current_row}'] = photo_url
+        sheet[f'BK{current_row}'] = item['Item Specifics']['Grade Designation']
 
         print(f"Debug: Key - {key}, SKU - {sku}, Retrieved URL - {photo_url}")  # Debug output
 

@@ -83,7 +83,7 @@ class App(QMainWindow):
         
         QMessageBox.information(self, "Settings Saved", "Default paths have been updated.")
 
-    ## Change to "python" when pushing to git
+    ## Change to "python3" when pushing to git
     def open_settings(self):
         subprocess.run(["python", "components/settings/settings_manager.py"], check=True)
     
