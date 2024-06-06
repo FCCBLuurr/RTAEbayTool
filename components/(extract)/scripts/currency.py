@@ -11,13 +11,13 @@ from settings.settings_manager import SettingsManager
 
 # Determine the project's root directory dynamically
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+
 base_dir = os.path.join(project_root, 'RTAEbayTool', 'components', '(extract)')
 
 # Initialize the SettingsManager with the correct path to the settings.json file
 settings_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'settings', 'settings.json')
 settings_manager = SettingsManager(settings_file)
 
-default_document_directory = settings_manager.get_setting('default_documents_directory', './document')
 default_output_directory = settings_manager.get_setting('default_output_directory', './components/(extract)/payload')
 
 def extract_data(filepath):
@@ -217,6 +217,7 @@ def load_data_into_payload(workbook, template_path):
     ic("File saved as: ", new_filename)
     
 if __name__ == '__main__':
+    print(project_root)
     if len(sys.argv) > 1:
         filepath = sys.argv[1]
         workbook, location_code = extract_data(filepath)
