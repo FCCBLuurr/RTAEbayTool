@@ -2,16 +2,13 @@ import os
 import sys
 import webbrowser
 import json
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QListWidget, QVBoxLayout, QFileDialog, QMessageBox, QWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QListWidget, QVBoxLayout, QFileDialog, QWidget
 import flickrapi
-from icecream import ic
 import random
 import time
 import xml.etree.ElementTree as ET
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from settings.settings_manager import SettingsManager
-import psycopg2
 
 # Initialize the SettingsManager with the correct path to the settings.json file
 settings_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'settings', 'settings.json')
@@ -78,7 +75,6 @@ class FlickrApp(QMainWindow):
             self.flickr.get_access_token(verifier)
                 
     def upload_photos(self):
-        app = QApplication(sys.argv)  # Ensure a QApplication instance is created
         file_path = QFileDialog.getExistingDirectory(None, "Select folder containing photos", default_photo_directory, QFileDialog.ShowDirsOnly)
         if not file_path:
             return  # User cancelled the operation
@@ -105,8 +101,6 @@ class FlickrApp(QMainWindow):
                     print("Failed to upload", filename, "Error:", e)
 
         self.write_json()
-        self.update_database()  # Update the database after writing JSON
-        app.exit()
 
     def parse_filename(self, filename):
         # Assuming the filename format is `{prefix}#{sku}_{suffix}.jpg`
@@ -137,16 +131,11 @@ class FlickrApp(QMainWindow):
 
     def write_json(self):
         # Organize and write to JSON
-        organized_data_db = {}
         organized_data_file = {}
         for sku, urls in self.photos_data.items():
             sorted_urls = sorted(urls, key=lambda x: x[0])  # Sort by suffix
-            organized_data_db[sku] = {'url': json.dumps([url for _, url in sorted_urls])}  # Convert to JSON array for DB
             organized_data_file[sku] = {'url': '|'.join([url for _, url in sorted_urls])}  # Concatenate URLs for file
-
-        # Store the organized data for database update
-        self.json_data = {'photos': organized_data_db}
-        print("Photos JSON prepared for database update")
+            print(f"Uploaded {sku}: {organized_data_file}")
 
         # Write the organized data to a JSON file
         target_path = os.path.join(base_dir, '(extract)', 'photos.json')
@@ -160,41 +149,6 @@ class FlickrApp(QMainWindow):
             json.dump({'photos': organized_data_file}, json_file, indent=4)
 
         print(f"Photos JSON saved to {target_path}")
-        return self.json_data
-
-    def update_database(self):
-        # Setup the database connection
-        connection = psycopg2.connect(
-            dbname="postgres",
-            user="bluurr",
-            password="548406",
-            host="127.0.0.1",
-            port="5432"
-        )
-        cursor = connection.cursor()
-
-        for sku, data in self.json_data['photos'].items():
-            # Check if the SKU exists in the database
-            cursor.execute('SELECT sku FROM inventory.obt_inventory WHERE sku = %s', (sku,))
-            row = cursor.fetchone()
-            if row:
-                # Update the URL for the existing SKU
-                cursor.execute('UPDATE inventory.obt_inventory SET photos = %s WHERE sku = %s', (data['url'], sku))
-                print(f"Updated SKU {sku} with URL {data['url']}")
-            else:
-                # Optionally, handle the case where SKU does not exist
-                print(f"SKU {sku} does not exist in the database")
-        connection.commit()
-
-        # Print out the updated database content for verification
-        cursor.execute('SELECT * FROM inventory.obt_inventory')
-        rows = cursor.fetchall()
-        for row in rows:
-            print(row)
-
-        # Close the database connection
-        cursor.close()
-        connection.close()
 
 
 if __name__ == '__main__':
